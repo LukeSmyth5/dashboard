@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-dark py-4 pl-4">
+        <a class="navbar-brand text-light " style="font-size: 30px; font-weight: bold;" href="">Executive Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto"></ul>
+
+            <div id="progressModal" class="modal">
+                <div class="modal-content">
+                    <h4>Operation in Progress</h4>
+                    <div class="progress">
+                        <div id="progressBar" class="progress-bar" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex mr-4" style="align-items:center">
+                <button class="mx-2 btn btn-success d-flex justify-content-center align-items-center"
+                    onclick="sendSyncCommand(); return false;">
+                    <span class="material-icons mr-2">sync</span>
+                    Sync
+                </button>
+                <button class="mx-2 btn btn-danger d-flex justify-content-center align-items-center"
+                    onclick="sendResetCommand(); return false;">
+                    <span class="material-icons mr-2">restore</span>
+                    Reset
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row bg-primary p-1"></div>
+    </div>
+    <form id="dashboardForm" action="/dashboard" method="GET" class="mb-3">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="form-group d-flex justify-content-between col-12 m-1">
+                    <div class="card text-center">
+                        <div class="card-header">
+                            <ul class="nav nav-pills card-header-pills" style="font-size: 18px;">
+                                <li class="nav-item">
+                                    <a class="nav-link select-all-btn" href="#">Select All</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link reset-columns-btn" href="#">Reset Columns</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link deselect-all-btn" href="#" tabindex="-1"
+                                        aria-disabled="true">Deselect All</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-body container-fluid" style="font-size: 18px;">
+                            <div>
+                                <% columns.forEach(column=> { %>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input column-checkbox" type="checkbox" name="columns"
+                                            value="<%= column %>" <%=selectedColumns.includes(column) ? 'checked' : ''
+                                            %>>
+                                        <label class="form-check-label">
+                                            <%= column %>
+                                        </label>
+                                    </div>
+                                    <% }) %>
+                            </div>
+                            <button type="submit" name="submit" class="btn btn-info" value="clean" id="cleanDataBtn"
+                                style="font-size: 18px;">Clean Data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Split selected column into two: 1. starting with 'bm_' and 2. others-->
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card-header pl-2">
+                <h4>Independent Variables</h4>
+            </div>
+            <table class="table table-bordered" id="dataTable">
+                <thead class="thead-dark">
+                    <tr>
+                        <% independentVariables.forEach(column=> { %>
+                            <th>
+                                <%= column %>
+                            </th>
+                            <% }) %>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% data.forEach((row, index)=> { %>
+                        <tr class="data-row table-primary">
+                            <% independentVariables.forEach(column=> { %>
+                                <td>
+                                    <%= row[column] || 'null' %>
+                                </td>
+                                <% }) %>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-8">
+            <div class="card-header pl-2">
+                <h4>Dependent Variables</h4>
+            </div>
+            <table class="table table-bordered" id="dataTable1">
+                <thead class="thead-dark">
+                    <tr>
+                        <% dependentVariables.forEach(column=> { %>
+                            <th>
+                                <%= column %>
+                            </th>
+                            <% }) %>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% data.forEach((row, index)=> { %>
+                        <tr class="data-row table-success">
+                            <% dependentVariables.forEach(column=> { %>
+                                <td>
+                                    <%= row[column] || 'null' %>
+                                </td>
+                                <% }) %>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <% paginationLinks.forEach(link=> { %>
+                <li class="page-item <%= link.isActive ? 'active' : '' %>">
+                    <a class="page-link" href="/dashboard?<%= link.queryString %>">
+                        <%= link.page %>
+                    </a>
+                </li>
+                <% }) %>
+        </ul>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-12">
+            <p>Total Data Available: <%= totalCount %>
+            </p>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <button id="regressionButton" onclick="analyze('regression')" class="btn btn-primary mb-2"
+                    style="font-size: 20px;">Regression Analysis</button>
+                <div id="box1" class="p-3 border" style="background-color: #f8d7da;">
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <button id="neuralButton" onclick="analyze('neurons')" class="btn btn-primary mb-2"
+                    style="font-size: 20px;">Neural Network Analysis</button>
+                <div id="box2" class="p-3 border" style="background-color: #d4edda;"></div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const apiUrl = "<%= apiUrl %>";
+        const host = "<%= host %>";
+        function analyze(analysisType) {
+            var boxId = analysisType === 'regression' ? 'box1' : 'box2';
+            var box = document.getElementById(boxId);
+            box.innerHTML = '';
+
+            var loader = document.createElement('div');
+            loader.className = 'spinner-border text-primary';
+            loader.role = 'status';
+            loader.style.marginRight = '5px';
+            var spinnerText = document.createElement('span');
+            spinnerText.className = 'visually-hidden';
+            spinnerText.textContent = 'Loading...';
+
+            var message = document.createElement('div');
+            message.textContent = 'Analysis in progress, please wait...';
+            message.className = 'd-flex align-items-center';
+            message.appendChild(loader);
+            message.appendChild(spinnerText);
+
+            box.appendChild(message);
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        let imageData = JSON.parse(this.responseText);
+                        let hash = imageData.session;
+                        //console.log(imageData);
+                        ajaxCall(hash, analysisType);
+
+                    } else {
+                        box.innerHTML = '<div class="alert alert-danger">Failed to initiate analysis. Please try again later.</div>';
+                        console.log('Failed to load image data');
+                    }
+                }
+            };
+            xhttp.open("GET", apiUrl + "/ai/" + analysisType);
+            //xhttp.open("GET", "https://zerofourtwo.net/api/ai/" + analysisType);
+            xhttp.send();
+        }
+
+        function ajaxCall(hash, name) {
+            var boxId = name === 'regression' ? 'box1' : 'box2';
+            var box = document.getElementById(boxId);
+
+            let ajax = new XMLHttpRequest();
+            ajax.onreadystatechange = function () {
+                if (ajax.readyState == 4) {
+                    if (ajax.status == 200) {
+                        let transactionData = JSON.parse(ajax.responseText);
+                        let keys = Object.keys(transactionData);
+                        let values = Object.values(transactionData);
+
+                        if (keys && keys.length > 0) {
+                            for (let i = 0; i < values.length; i++) {
+                                box.innerHTML = '';
+                                loadImage(values[i], hash, name);
+                            }
+                        } else {
+
+                            // wait for 10 seconds and call the function again
+                            setTimeout(function () {
+                                console.log('Waiting for 10 seconds')
+                                ajaxCall(hash, name);
+                            }, 10000);
+                        }
+                    }
+
+                } else {
+                    console.log('Failed to load transaction data');
+                }
+            };
+            ajax.open("GET", apiUrl + "/transaction/" + hash);
+            //ajax.open("GET", "https://zerofourtwo.net/api/transaction/" + hash);
+            ajax.send();
+        }
+
+        function loadImage(imageUrl, hash, name) {
+            var boxId = name === 'regression' ? 'box1' : 'box2';
+            var box = document.getElementById(boxId);
+
+            var img = new Image();
+            img.className = "img-fluid";
+            img.onload = function () {
+                box.appendChild(img);
+            };
+            img.onerror = function () {
+                box.innerHTML = '<div class="alert alert-danger">Failed to load image.</div>';
+            };
+            img.src = apiUrl + "/images/" + imageUrl;
+            //img.src = "https://zerofourtwo.net/api/images/" + imageUrl;
+
+            console.log(img.src);
+        }
+
+        function showModal() {
+            document.getElementById('progressModal').style.display = 'block';
+            document.getElementById('progressBar').style.width = '5%';
+        }
+
+        function hideModal() {
+            document.getElementById('progressModal').style.display = 'none';
+        }
+
+        function sendSyncCommand() {
+            const url = `${host}/dashboard`;
+
+            const bodyData = { action: 'sync' };
+            const bodyString = JSON.stringify(bodyData);
+
+            showModal();
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: bodyString
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('progressBar').style.width = '100%';
+                    setTimeout(() => {
+                        hideModal();
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                    alert('Failed to synchronize.');
+                });
+        }
+        function sendResetCommand() {
+            const url = `${host}/dashboard`;
+            const bodyData = { action: 'reset' };
+            const bodyString = JSON.stringify(bodyData);
+
+            showModal();
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: bodyString
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('progressBar').style.width = '100%'; // Complete the progress
+                    setTimeout(() => {
+                        hideModal(); // Hide the modal after a short delay
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                    alert('Failed to reset.');
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectAllBtn = document.querySelector('.select-all-btn');
+            const deselectAllBtn = document.querySelector('.deselect-all-btn');
+            const resetColumnsBtn = document.querySelector('.reset-columns-btn');
+            const checkboxes = document.querySelectorAll('.column-checkbox');
+            const rowsSelect = document.getElementById('rowsSelect');
+            const dataRows = document.querySelectorAll('tr.data-row');
+
+            // Function to update the visibility of data rows based on the selected number of rows
+            const updateVisibleRows = () => {
+                const numRowsToShow = parseInt(rowsSelect.value, 10);
+                dataRows.forEach((row, index) => {
+                    row.style.display = index < numRowsToShow ? '' : 'none';
+                });
+            };
+
+            // Event listener for the 'Select All' button
+            selectAllBtn.addEventListener('click', () => {
+                checkboxes.forEach(checkbox => checkbox.checked = true);
+            });
+
+            // Event listener for the 'Deselect All' button
+            deselectAllBtn.addEventListener('click', () => {
+                checkboxes.forEach(checkbox => checkbox.checked = false);
+            });
+
+            // Event listener for the 'Reset Columns' button
+            resetColumnsBtn.addEventListener('click', () => {
+                window.location.href = '/dashboard'; // Redirect without any query parameters
+            });
+
+            // Event listener for any change in the checkboxes
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+
+
+                });
+            });
+
+            // Adjust visibility of data rows when the selection changes
+            rowsSelect.addEventListener('change', updateVisibleRows);
+            // Initial adjustment of data rows visibility based on the default selection
+            updateVisibleRows();
+
+        });
+
+    </script>
+</body>
+
+</html>

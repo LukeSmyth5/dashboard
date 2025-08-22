@@ -1,0 +1,112 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+}
+
+th, td {
+    text-align: left;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+input[type="checkbox"], select {
+    margin-right: 10px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+label {
+    margin-right: 15px;
+}
+
+select {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+input[type="checkbox"] {
+    transform: scale(1.2);
+}
+
+#box1 img, #box2 img {
+    width: 100%;            /* Ensure it doesn't exceed the width of the box */
+    height: auto;           /* Maintain aspect ratio */
+    object-fit: contain;      
+    max-height: 2000px;      /* Optional: Set a max-height for larger displays */
+    padding: 5px;
+}
+
+#box1, #box2 {
+    overflow-y: auto; /* Allows vertical scrolling */
+    padding: 5px;    /* Padding inside the box */
+    width: 100%;
+}
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  }
+  
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+  }
+  
+  .progress {
+    background-color: #ddd;
+    border-radius: 2px;
+    height: 20px;
+    width: 100%;
+  }
+  
+  .progress-bar {
+    background-color: #4CAF50;
+    height: 20px;
+    width: 0%;
+  }
+  
